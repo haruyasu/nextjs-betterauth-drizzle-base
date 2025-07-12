@@ -9,7 +9,7 @@ export const { signIn, signOut, useSession, getSession } = authClient
 export const signInWithGoogle = async () => {
   const data = await authClient.signIn.social({
     provider: "google",
-    callbackURL: "/dashboard",
+    callbackURL: "/suggestion",
   })
   return data
 }

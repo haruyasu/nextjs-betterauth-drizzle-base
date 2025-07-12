@@ -49,3 +49,15 @@ export const verifications = pgTable("verifications", {
   createdAt: timestamp("created_at"),
   updatedAt: timestamp("updated_at"),
 })
+
+// 商品レコメンド履歴
+export const productRecommendations = pgTable("product_recommendations", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id"), // オプショナルに変更
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  productData: text("product_data").notNull(), // JSON形式の商品データ
+  query: text("query").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})

@@ -5,6 +5,7 @@ import type { Session } from "@/lib/auth"
 import { signOut } from "@/lib/auth-client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Sparkles } from "lucide-react"
 
 interface NavigationProps {
   initialSession: Session | null
@@ -31,7 +32,10 @@ const Navigation = ({ initialSession }: NavigationProps) => {
           {initialSession && initialSession?.user ? (
             <>
               <Button asChild size="sm">
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/suggestion">
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  AI商品提案
+                </Link>
               </Button>
               <Button size="sm" variant="outline" onClick={handleSignOut}>
                 Logout
