@@ -22,9 +22,9 @@ jobs:
         key: ${{ secrets.VULTR_SSH_KEY }}
         script: |
           ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-          cd /home/haruyasu/src/video-generator
+          cd /home/xxxx/src/base-app
           git pull
           yarn
           yarn db:migrate
           yarn build
-          pm2 restart video-generator
+          pm2 restart base-app
