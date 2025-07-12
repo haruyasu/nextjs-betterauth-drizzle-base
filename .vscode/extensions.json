@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "esbenp.prettier-vscode",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "mosapride.zenkaku",
+    "ms-vsliveshare.vsliveshare",
+    "oderwat.indent-rainbow",
+    "pucelle.vscode-css-navigation",
+    "shardulm94.trailing-spaces",
+    "streetsidesoftware.code-spell-checker",
+    "github.copilot"
+  ]
+}
