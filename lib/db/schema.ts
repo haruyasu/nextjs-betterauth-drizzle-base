@@ -57,7 +57,11 @@ export const productRecommendations = pgTable("product_recommendations", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  query: text("query").notNull(), // ユーザーの質問
+  analysisResult: text("analysis_result"), // JSON形式の分析結果（requirements, searchKeyword等）
+  recommendation: text("recommendation"), // AI推薦レポート
   productData: text("product_data").notNull(), // JSON形式の商品データ
-  query: text("query").notNull(),
+  reviewData: text("review_data"), // JSON形式のレビューデータ
+  success: boolean("success").default(true), // 提案の成功/失敗
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })

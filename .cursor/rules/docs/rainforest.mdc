@@ -1,0 +1,397 @@
+---
+alwaysApply: true
+---
+
+Parameter
+
+
+
+Required
+
+
+
+Description
+
+
+
+api_key
+
+
+
+required
+
+
+
+The API key for your Rainforest API account.
+
+
+
+type
+
+
+
+required
+
+
+
+The type of Amazon data to retrieve. The value of the type parameter determines which additional parameters are available. For example, if you make a request with type=reviews then additional Reviews Parameters , specific to reviews requests, are available.  
+
+
+Valid values for type are:
+
+
+product
+Request data from the product page for an asin or Amazon product page url . See additional Product Parameters .
+
+
+
+
+
+
+
+stock_estimation
+Request stock estimation data for a given asin . See additional Stock Estimation Parameters .
+
+
+
+
+
+
+
+sales_estimation
+Request sales estimation data given asin or bestseller_rank . See additional Sales Estimation Parameters .
+
+
+
+
+
+
+
+bestsellers
+Request bestsellers data for a given Bestsellers category. See additional Bestsellers Parameters .
+
+
+
+
+
+
+
+search
+Request search results data for a given keywords on specific Amazon sites. See additional Search Parameters .
+
+
+
+
+
+
+
+offers
+Request product offers for an asin or Amazon product page url . See additional Offers Parameters .
+
+
+
+
+
+
+
+reviews
+Request customer reviews for an asin or Amazon product page url . See additional Reviews Parameters .
+
+
+
+
+
+
+
+review_comments
+Request customer review comments for a given review_id . See additional Review Comments Parameters .
+
+
+
+
+
+
+
+reviewer_profile
+Request reviewer profile data for a reviewer_id or Amazon reviewer profile page url . See additional Reviewer Profile Parameters .
+
+
+
+
+
+
+
+category
+Request data for a given Amazon category. See additional Category Parameters .
+
+
+
+
+
+
+
+also_bought
+Request all of the products, including those behind the scroll, listed as "also bought with" in the also bought carousel on the product page. See additional Also Bought Parameters .
+
+
+
+
+
+
+
+seller_profile
+Request seller profile data for a seller_id or Amazon seller profile page url . See additional Seller Profile Parameters .
+
+
+
+
+
+
+
+seller_feedback
+Request seller customer feedback results for a seller_id . See additional Seller Feedback Parameters .
+
+
+
+
+
+
+
+seller_products
+Request product listings for products sold by an Amazon seller specified by a seller_id or Amazon seller product listing page url . See additional Seller Products Parameters .
+
+
+
+
+
+
+
+questions
+Request questions & answers for an asin or Amazon product page url . See additional Questions Parameters .
+
+
+
+
+
+
+
+question_answers
+Request all answers (not just the default selected answer) for a question_id or Amazon question answers page url . See additional Question Answers Parameters .
+
+
+
+
+
+
+
+autocomplete
+Request all autocomplete suggestions. See additional Autocomplete Parameters .
+
+
+
+
+
+
+
+author_page
+Request an author page for a given author asin or Amazon authors page url . See additional Author Page Parameters .
+
+
+
+
+
+
+
+store
+Request an brand store for a given store_id or Amazon brand store page url . See additional Store Parameters .
+
+
+
+
+
+
+
+charts
+Request data from an Amazon Charts page for the given url . See additional Charts Parameters .
+
+
+
+
+
+
+
+asin_to_gtin
+Request GTIN / EAN / UPC / ISBN values for a given asin on a given amazon_domain . See additional ASIN to GTIN Parameters . Can be used for converting ASINS to GTIN / EAN / UPC / ISBN numbers in bulk.
+
+
+
+
+
+
+
+formats_editions
+Request data from the "Formats & Editions" popup typically shown on books product pages for a given asin on a given amazon_domain . See additional Formats and Editions Parameters .
+
+
+
+
+
+
+
+wishlist
+Request data from Amazon wishlists for a given wishlist_id on a given amazon_domain . See additional Wishlist Parameters .
+
+
+
+
+include_html
+
+
+
+optional
+
+
+
+Determines whether raw HTML is included in the response (this can increase the size of the response). Can be set to true or false (the default).  
+
+
+Note When adding requests with include_html=true to a Collection the maximum number of requests is lower (100) because including the HTML within the response makes the Collection Result Sets much larger. The limit is in place to ensure Result Set files are of a manageable size. If you have need to run a large number of requests all with include_html=true then simply split the requests across multiple 100-request Collections.
+
+
+
+output
+
+
+
+optional
+
+
+
+Determines the format in which results are returned. Can be set to json (default) to get the results as structured JSON, html to get the raw html retrieved or csv to return the results in CSV format. When using csv you can also use the csv_fields parameter to specify which fields to return in the CSV.
+
+
+
+csv_fields
+
+
+
+optional
+
+
+
+Determines the fields that are returned when returning in csv mode (i.e. when the output parameter is set to csv ). Should be specified as a comma seperated list of fields (in nested field, dot notation, format). For more information on the csv_fields parameter please see the CSV Fields Reference .
+
+
+
+customer_location
+
+
+
+optional
+
+
+
+Determines the location that Rainforest uses when retrieving pages from Amazon. This is useful, for example, for seeing details of how a product appears on amazon.com, to a customer located in a different country. Can be used to identify cross-border shipping data and opportunities. For more available values of customer_location please see the Customer Locations Reference . If no value for customer_location is supplied then Rainforest defaults to making the request from the country of the Amazon page requested - i.e. "France" for requests for pages from "amazon.fr".
+
+
+
+customer_zipcode
+
+
+
+optional
+
+
+
+Determines the specific customer zipcode or postal code location of the request. This is useful, for example, for seeing details highly localized listings such as Amazon Fresh.  
+
+
+To use the customer_zipcode parameter you must first setup the zipcode, for the given Amazon Domain, in the zipcodes section of the Dashboard.  
+
+
+For more information please see the Customer Zipcode Reference .  
+
+
+Note The customer_zipcode parameter cannot be used in conjuction with the customer_location parameter.
+
+
+
+language
+
+
+
+optional
+
+
+
+Determines the display language Rainforest requests the Amazon page in. For languages Amazon support see Supported Languages .
+
+
+
+currency
+
+
+
+optional
+
+
+
+Determines the currency Rainforest requests the Amazon page. For supported currency values for each Amazon domain see the Supported Currencies .
+
+
+
+skip_on_incident
+
+
+
+optional
+
+
+
+Instructs the API to not serve requests when a parsing incident is detected. Valid values are all (where the API will not serve a response if a "degraded" or "major" parsing incident is live) and major_only (where the API will not serve a response is a "major" parsing incident is live, but will if a "degraded service" parsing incident is live).  
+
+
+You can view service status via the status page .  
+
+
+Using skip_on_incident can be desirable if your system is making unsupervised requests to the API that you would like to gracefully fail in the event of an incident.
+
+
+
+associate_id
+
+
+
+optional
+
+
+
+Pass your Amazon Associate ID (your Amazon affiliate ID) and Rainforest will append your Associate ID to all Amazon links returned in all API responses (by appending the tag=YOURASSOCIATEID parameter to all returned Amazon links).
+
+
+
+include_fields
+
+
+
+optional
+
+
+
+A comma-seperated list JSON field names to include in the JSON object the API returns. You can specify the field names in dot notation - i.e. include_fields=pagination will only include the the pagination property in the response JSON. Use include_fields if you only want to include specific fields in the API's JSON response.
+
+
+
+exclude_fields
+
+
+
+optional
+
+
+
+A comma-seperated list of JSON field names to exclude from the JSON object the API returns. You can specify the field names in dot notation - i.e. exclude_fields=pagination will remove the pagination property from the response JSON. Use exclude_fields if there are specific fields you wish to exclude from the API's JSON response.
+
+
+
+

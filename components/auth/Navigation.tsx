@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button"
 import type { Session } from "@/lib/auth"
 import { signOut } from "@/lib/auth-client"
+import { Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Sparkles } from "lucide-react"
 
 interface NavigationProps {
   initialSession: Session | null
@@ -23,9 +23,9 @@ const Navigation = ({ initialSession }: NavigationProps) => {
 
   return (
     <header className="border-b">
-      <div className="px-2 max-w-screen-xl mx-auto py-4 flex items-center justify-between">
+      <div className="container mx-auto px-6 py-5 flex items-center justify-between">
         <div className="font-bold text-lg">
-          <Link href="/">Base App</Link>
+          <Link href="/">AI商品提案サービス</Link>
         </div>
 
         <div className="flex items-center space-x-3 text-xs">
@@ -34,7 +34,7 @@ const Navigation = ({ initialSession }: NavigationProps) => {
               <Button asChild size="sm">
                 <Link href="/suggestion">
                   <Sparkles className="h-4 w-4 mr-1" />
-                  AI商品提案
+                  提案
                 </Link>
               </Button>
               <Button size="sm" variant="outline" onClick={handleSignOut}>

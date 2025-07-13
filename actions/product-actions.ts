@@ -9,6 +9,7 @@ interface RainforestSearchParams {
   search_term: string
   max_page?: number
   include_fields?: string
+  sort_by?: string
 }
 
 interface RainforestProduct {
@@ -49,6 +50,7 @@ export async function searchProducts(
     search_term: searchTerm,
     max_page: Math.ceil(maxResults / 20),
     include_fields: "search_results",
+    sort_by: "average_review",
   }
 
   const queryString = new URLSearchParams(
@@ -59,12 +61,21 @@ export async function searchProducts(
   ).toString()
 
   try {
+    console.log(
+      "Rainforest API リクエスト URL:",
+      `https://api.rainforestapi.com/request?${queryString}`
+    )
+
     const response = await fetch(
       `https://api.rainforestapi.com/request?${queryString}`
     )
 
     if (!response.ok) {
-      throw new Error(`Rainforest API エラー: ${response.status}`)
+      const errorText = await response.text()
+      console.error("Rainforest API エラー詳細:", errorText)
+      throw new Error(
+        `Rainforest API エラー: ${response.status} - ${errorText}`
+      )
     }
 
     const data = await response.json()
@@ -94,43 +105,5 @@ export async function searchProducts(
   } catch (error) {
     console.error("商品検索エラー:", error)
     throw new Error("商品検索に失敗しました")
-  }
-}
-
-export async function getProductDetails(asin: string) {
-  const session = await getServerSession()
-
-  if (!session?.user?.id) {
-    throw new Error("認証が必要です")
-  }
-
-  if (!process.env.RAINFOREST_API_KEY) {
-    throw new Error("Rainforest API key が設定されていません")
-  }
-
-  const params = {
-    api_key: process.env.RAINFOREST_API_KEY,
-    type: "product",
-    amazon_domain: "amazon.co.jp",
-    asin: asin,
-  }
-
-  const queryString = new URLSearchParams(params).toString()
-
-  try {
-    const response = await fetch(
-      `https://api.rainforestapi.com/request?${queryString}`
-    )
-
-    if (!response.ok) {
-      throw new Error(`Rainforest API エラー: ${response.status}`)
-    }
-
-    const data = await response.json()
-
-    return data.product
-  } catch (error) {
-    console.error("商品詳細取得エラー:", error)
-    throw new Error("商品詳細の取得に失敗しました")
   }
 }

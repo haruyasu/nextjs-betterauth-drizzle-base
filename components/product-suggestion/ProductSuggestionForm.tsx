@@ -112,7 +112,7 @@ export function ProductSuggestionForm({
             <ShoppingCart className="h-8 w-8 text-blue-500" />
             <Sparkles className="h-8 w-8 text-yellow-500" />
           </div>
-          <CardTitle className="text-2xl">AI商品提案サービス</CardTitle>
+          <CardTitle className="text-2xl">AI商品提案</CardTitle>
           <p className="text-gray-600">
             欲しい商品について自由に説明してください。AIがあなたの要求を分析し、最適な商品を提案します。
           </p>

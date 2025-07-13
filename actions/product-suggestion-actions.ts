@@ -11,6 +11,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+// 商品提案件数
+const SUGGESTION_COUNT = 4
+
 interface ProductRequirements {
   category: string
   priceRange: string
@@ -153,7 +156,7 @@ export async function generateProductSuggestion(
     // 2. 構造化された情報を基に検索キーワードを生成
     const searchKeyword = generateSearchKeyword(requirements)
 
-    // 3. Amazon商品検索を実行
+    // 3. Amazon商品検索を実行（評価順で取得）
     const products = await searchProducts(searchKeyword, 10)
 
     if (!products || products.length === 0) {
@@ -166,105 +169,201 @@ export async function generateProductSuggestion(
       }
     }
 
-    // 4. 商品リストを分析して最適な商品を推薦
+    // 4. 商品のタイトルと評価を分析して最適な商品を${SUGGESTION_COUNT}件に厳選
     const recommendationResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `あなたは商品レコメンドの専門家です。以下の商品リストと要求仕様を基に、最適な商品を3-5個選んで推薦してください。
+          content: `あなたは商品レコメンドの専門家です。以下の商品リストと要求仕様を基に、最適な商品を**必ず${SUGGESTION_COUNT}件だけ**選んで推薦してください。
 
           推薦基準：
-          1. 要求仕様との適合度
+          1. 要求仕様との適合度（商品タイトルから判断）
           2. 価格帯との適合性
-          3. 機能・特徴の充実度
-          4. 商品評価・レビュー数
+          3. 商品評価（★の数）
+          4. レビュー数（信頼性の指標）
           5. ユーザーの優先度（価格/品質/機能/ブランド）
+
+          **判断材料：**
+          - 商品タイトル（機能や特徴を含む）
+          - 価格
+          - 評価（★の数）
+          - レビュー数
+          - Prime対応有無
+
+          **重要な指示：**
+          - **必ず${SUGGESTION_COUNT}件の商品のみ**を選んで推薦してください
+          - 各推薦商品について、必ず正確なASIN番号を明記してください
+          - 商品タイトルと評価から適切に判断してください
+          - 推薦しない商品については言及しないでください
 
           **出力形式：マークダウン形式で構造化した推薦レポートを作成してください**
 
           以下の構造で回答してください：
           
-          ## 推薦商品の概要
-          簡潔な推薦サマリー
+          ## 厳選商品${SUGGESTION_COUNT}件の推薦理由
+          なぜこの${SUGGESTION_COUNT}件を選んだかの総合的な判断理由
           
-          ## 推薦商品詳細
+          ## 推薦商品詳細（${SUGGESTION_COUNT}件のみ）
           
-          各商品について以下を含めて説明してください：
-          ### 商品名
-          - **推薦理由**：なぜこの商品を選んだか
-          - **主要な特徴・機能**：重要な機能やスペック
+          ${Array.from(
+            { length: SUGGESTION_COUNT },
+            (_, i) => `### ${i + 1}. 商品名
+          - **ASIN**: B0XXXXXXXXX
+          - **推薦理由**：なぜこの商品を選んだか（タイトルから判断できる機能・特徴を含む）
           - **価格の妥当性**：価格帯との適合性
-          - **評価・レビュー状況**：★評価とレビュー数
-          - **注意点・検討事項**：購入前に知っておくべきこと
+          - **評価・信頼性**：★評価とレビュー数から判断できる信頼性
+          - **注意点・検討事項**：商品タイトルから推測できる注意点`
+          ).join("\n\n          ")}
           
-          ## 購入の決定ポイント
-          最終的な選択のためのアドバイス
-
-          推薦は具体的で購入の決定に役立つ情報を提供してください。`,
+          ## 最終購入アドバイス
+          ${SUGGESTION_COUNT}件の中での選択基準とおすすめ順位`,
         },
         {
           role: "user",
-          content: `ユーザーの要求：
-          - カテゴリ: ${requirements.category}
-          - 価格帯: ${requirements.priceRange}
-          - 重要な機能: ${requirements.features.join(", ")}
-          - ブランド: ${requirements.brand || "指定なし"}
-          - サイズ: ${requirements.size || "指定なし"}
-          - 色: ${requirements.color || "指定なし"}
-          - 用途: ${requirements.usage || "指定なし"}
-          - 優先度: ${requirements.priority}
+          content: `要求仕様:
+          ${JSON.stringify(requirements, null, 2)}
 
-          検索結果:
+          検索キーワード: ${searchKeyword}
+
+          商品一覧（評価順に並んでいます、この中から${SUGGESTION_COUNT}件を厳選してください）:
           ${products
             .map(
-              (product, index) => `
-          ${index + 1}. ${product.title || "タイトル不明"}
-          - 価格: ${product.price?.raw || "価格不明"}
-          - 評価: ${product.rating || "N/A"}/5 (${product.ratings_total || 0}件)
-          - Prime: ${product.is_prime ? "あり" : "なし"}
-          - ASIN: ${product.asin || "N/A"}
-          `
+              (p, i) =>
+                `${i + 1}. ${p.title}
+              - ASIN: ${p.asin}
+              - 価格: ${p.price?.raw || "価格不明"}
+              - 評価: ${p.rating || "評価なし"}★ (${
+                  p.ratings_total || 0
+                }件のレビュー)
+              - Prime: ${p.is_prime ? "対応" : "非対応"}
+              - リンク: ${p.link}
+              `
             )
             .join("\n")}
 
-          上記の商品から、ユーザーの要求に最も適した商品を選んで詳しく推薦してください。`,
+          上記の商品情報を基に、商品タイトルと評価から判断して、ユーザーの要求に最も適した商品を**必ず${SUGGESTION_COUNT}件だけ**選んで詳しく推薦してください。`,
         },
       ],
-      max_tokens: 2000,
       temperature: 0.7,
     })
 
-    const recommendation =
-      recommendationResponse.choices[0]?.message?.content ||
-      "推薦の生成に失敗しました"
+    let recommendation =
+      recommendationResponse.choices[0]?.message?.content || ""
 
-    // 5. 結果をデータベースに保存
+    // 5. 推薦されたASINを抽出（${SUGGESTION_COUNT}件のみ）
+    const recommendedAsins = extractRecommendedAsins(recommendation)
+    console.log("推薦されたASIN:", recommendedAsins)
+
+    // 6. 推薦された商品のみをフィルタリング（最大${SUGGESTION_COUNT}件）
+    let recommendedProducts = products
+      .filter((product) => recommendedAsins.includes(product.asin))
+      .slice(0, SUGGESTION_COUNT) // 安全のため${SUGGESTION_COUNT}件に制限
+
+    console.log(
+      `推薦商品フィルタリング: 全${products.length}件から${recommendedProducts.length}件を選択`
+    )
+
+    // 7. ${SUGGESTION_COUNT}件に満たない場合のフォールバック処理
+    if (recommendedProducts.length < SUGGESTION_COUNT) {
+      console.warn(
+        `警告: 推薦商品が${recommendedProducts.length}件のみです。フォールバック処理を実行します。`
+      )
+
+      // 評価とレビュー数で商品をソート（既に評価順で取得済みだが、念のため再ソート）
+      const sortedProducts = products.sort((a, b) => {
+        const scoreA = (a.rating || 0) * Math.log(1 + (a.ratings_total || 0))
+        const scoreB = (b.rating || 0) * Math.log(1 + (b.ratings_total || 0))
+        return scoreB - scoreA
+      })
+
+      // 既に選択された商品のASINを取得
+      const selectedAsins = recommendedProducts.map((p) => p.asin)
+
+      // 不足分を補完
+      const remainingProducts = sortedProducts.filter(
+        (p) => !selectedAsins.includes(p.asin)
+      )
+
+      const additionalProducts = remainingProducts.slice(
+        0,
+        SUGGESTION_COUNT - recommendedProducts.length
+      )
+      recommendedProducts = [...recommendedProducts, ...additionalProducts]
+
+      console.log(
+        `フォールバック完了: 追加${additionalProducts.length}件、合計${recommendedProducts.length}件`
+      )
+
+      // フォールバック使用の情報を推薦文に追加
+      if (additionalProducts.length > 0) {
+        const fallbackNote = `\n\n---\n**注意**: 一部の商品は評価と信頼性に基づいて自動選択されました。`
+        recommendation += fallbackNote
+      }
+    }
+
+    // 8. データベースに結果を保存（推薦された${SUGGESTION_COUNT}件のみ）
     await db.insert(productRecommendations).values({
       id: nanoid(),
-      sessionId: null, // チャット機能は不要なのでnull
+      sessionId: null,
       userId: session.user.id,
-      productData: JSON.stringify(products),
       query: userQuery,
+      analysisResult: JSON.stringify({
+        requirements,
+        searchKeyword,
+      }),
+      recommendation,
+      productData: JSON.stringify(recommendedProducts), // 厳選された${SUGGESTION_COUNT}件のみ保存
+      reviewData: JSON.stringify({}), // レビューデータは使用しない
+      success: true,
     })
 
     return {
       requirements,
       searchKeyword,
       recommendation,
-      products: products.slice(0, 5),
+      products: recommendedProducts, // 厳選された${SUGGESTION_COUNT}件のみ返す
       success: true,
     }
   } catch (error) {
-    console.error("商品提案生成エラー:", error)
+    console.error("商品提案エラー:", error)
+
+    // エラー時もデータベースに保存
+    await db.insert(productRecommendations).values({
+      id: nanoid(),
+      sessionId: null,
+      userId: session.user.id,
+      query: userQuery,
+      analysisResult: JSON.stringify({
+        requirements: {
+          category: "エラー",
+          priceRange: "エラー",
+          features: [],
+          priority: "quality" as const,
+        },
+        searchKeyword: "",
+      }),
+      recommendation: `申し訳ございません。商品提案の処理中にエラーが発生しました: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      productData: JSON.stringify([]),
+      reviewData: JSON.stringify({}),
+      success: false,
+    })
+
     return {
-      requirements: {} as ProductRequirements,
+      requirements: {
+        category: "エラー",
+        priceRange: "エラー",
+        features: [],
+        priority: "quality" as const,
+      },
       searchKeyword: "",
-      recommendation:
-        "商品提案の生成中にエラーが発生しました。もう一度お試しください。",
+      recommendation: `申し訳ございません。商品提案の処理中にエラーが発生しました: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
       products: [],
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
@@ -281,4 +380,43 @@ function generateSearchKeyword(requirements: ProductRequirements): string {
   parts.push(...importantFeatures)
 
   return parts.join(" ")
+}
+
+/**
+ * AIレコメンデーション文章から推薦されたASINを抽出
+ */
+function extractRecommendedAsins(recommendationText: string): string[] {
+  // 複数のASINパターンを検索
+  const patterns = [
+    /\*\*ASIN\*\*:\s*(B[0-9A-Z]{9})/gi, // **ASIN**: B0XXXXXXXXX
+    /ASIN:\s*(B[0-9A-Z]{9})/gi, // ASIN: B0XXXXXXXXX
+    /- \*\*ASIN\*\*:\s*(B[0-9A-Z]{9})/gi, // - **ASIN**: B0XXXXXXXXX
+    /ASIN\s*:\s*(B[0-9A-Z]{9})/gi, // ASIN : B0XXXXXXXXX (スペース込み)
+    /\(ASIN:\s*(B[0-9A-Z]{9})\)/gi, // (ASIN: B0XXXXXXXXX)
+  ]
+
+  const allAsins: string[] = []
+
+  // 各パターンでマッチを探す
+  patterns.forEach((pattern) => {
+    const matches = Array.from(
+      recommendationText.matchAll(pattern),
+      (m) => m[1]
+    )
+    allAsins.push(...matches)
+  })
+
+  // 重複を除去
+  const uniqueAsins = [...new Set(allAsins)]
+
+  // ${SUGGESTION_COUNT}件に満たない場合の詳細ログ
+  if (uniqueAsins.length < SUGGESTION_COUNT) {
+    console.warn(
+      `⚠️ ASIN抽出が${SUGGESTION_COUNT}件未満です。推薦テキストの形式を確認してください。`
+    )
+    console.log("推薦テキストの最初の500文字:")
+    console.log(recommendationText.substring(0, 500))
+  }
+
+  return uniqueAsins
 }

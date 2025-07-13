@@ -8,6 +8,13 @@
       "when": 1752306694622,
       "tag": "0000_silly_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752309100035,
+      "tag": "0001_warm_speed_demon",
+      "breakpoints": true
     }
   ]
 }

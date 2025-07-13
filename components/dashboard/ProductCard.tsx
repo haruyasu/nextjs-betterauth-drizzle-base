@@ -1,9 +1,9 @@
 "use client"
 
-import { ExternalLink, Star, ShoppingCart, Crown } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Crown, ExternalLink, ShoppingCart, Star } from "lucide-react"
 import Image from "next/image"
 
 interface Product {
@@ -101,9 +101,6 @@ export function ProductCard({ product }: ProductCardProps) {
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
             Amazonで見る
-          </Button>
-          <Button onClick={handleViewProduct} variant="outline" size="icon">
-            <ExternalLink className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
